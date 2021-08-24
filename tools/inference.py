@@ -141,7 +141,7 @@ def inference(testset, model, results, cfgs):
     all_records = {}
     for batch_idx, (_, meta) in enumerate(data_loader):
         if cfgs['use_gt_box']:
-            save_dir = make_output_dir(cfgs, 'gt_box_test')         
+            save_dir = make_output_dir(cfgs, 'gt_box_test')
             # use ground truth bounding box to crop RoIs
             record = model(meta)
             record = model.post_process(record,
@@ -166,8 +166,8 @@ def inference(testset, model, results, cfgs):
                 for key in record2:
                     if 'record' in locals() and 'plots' in record[key]:
                         record2[key]['plots'] = record[key]['plots']
-                save_dir = make_output_dir(cfgs, 'submission')   
-                record2 = model.post_process(record2, 
+                save_dir = make_output_dir(cfgs, 'submission')
+                record2 = model.post_process(record2,
                                              visualize=cfgs['visualize'],
                                              color_dict={'bbox_2d':'r',
                                                          'bbox_3d':'r',
@@ -177,10 +177,13 @@ def inference(testset, model, results, cfgs):
                                                         'save_dir':save_dir
                                                         },
                                              alpha_mode=cfgs['testing_settings']['alpha_mode']
-                                             )   
+                                             )
+
         if cfgs['visualize']:
-            input("Press Enter to view next batch.")
-        # set batch_to_show to a small number if you need to visualize 
+            plt.close('all')
+        #     input("Press Enter to view next batch.") # TODO
+
+        # set batch_to_show to a small number if you need to visualize
         if batch_idx >= cfgs['batch_to_show'] - 1:
             break  
     return
@@ -252,7 +255,7 @@ def main():
     inference(dataset_inf, model, results, cfgs)       
     if cfgs['visualize']:
         return
-    
+
     evaluator = "./kitti-eval/evaluate_object_3d_offline"
     label_dir = os.path.join(cfgs['dataset']['root'], 'training', 'label_2')
     output_dir = os.path.join(cfgs['dirs']['output'], 'submission')

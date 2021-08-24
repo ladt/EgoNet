@@ -25,28 +25,34 @@ def plot_2d_objects(img_path, record, color_dict):
         record['plots']['ax2d'] = ax
         image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)[:, :, ::-1]
         height, width, _ = image.shape
-        ax.imshow(image) 
+        ax.imshow(image)
         ax.set_xlim([0, width])
         ax.set_ylim([0, height])
         ax.invert_yaxis()
+
+    # TODO 2d bboxes
     for idx in range(len(record['kpts_2d_pred'])):
         kpts = record['kpts_2d_pred'][idx].reshape(-1, 2)
         bbox = record['bbox_resize'][idx]
         vp.plot_2d_bbox(ax, bbox, color_dict['bbox_2d'])
-        # predicted key-points
-        ax.plot(kpts[:, 0], kpts[:, 1], color_dict['kpts'][0])    
+    #
+    #     TODO predicted key-points
+        ax.plot(kpts[:, 0], kpts[:, 1], color_dict['kpts'][0])
+    #
+    # TODO 3d bbox
     if 'kpts_2d_gt' in record:
         # plot ground truth 2D screen coordinates
         for idx, kpts_gt in enumerate(record['kpts_2d_gt']):
             kpts_gt = kpts_gt.reshape(-1, 3)
             vp.plot_3d_bbox(ax, kpts_gt[1:, :2], color='g', linestyle='-.')
+
     if 'arrow' in record:
         for idx in range(len(record['arrow'])):
             start = record['arrow'][idx][:,0]
             end = record['arrow'][idx][:,1]
             x, y = start
             dx, dy = end - start
-            ax.arrow(x, y, dx, dy, color='r', lw=4, head_width=5, alpha=0.5) 
+            ax.arrow(x, y, dx, dy, color='r', lw=4, head_width=5, alpha=0.5)
     # save intermediate results
     # plt.gca().set_axis_off()
     # plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
@@ -57,7 +63,7 @@ def plot_2d_objects(img_path, record, color_dict):
     # img_name = img_path.split('/')[-1]
     # save_dir = './qualitative_results/'
     # plt.savefig(save_dir + img_name, dpi=100, bbox_inches = 'tight', pad_inches = 0)
-    return record
+    return record, fig # TODO only record was returned
 
 def plot_3d_objects(prediction, target, pose_vecs_gt, record, color):
     if target is not None:

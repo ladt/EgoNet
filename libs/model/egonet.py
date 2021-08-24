@@ -4,12 +4,13 @@ A PyTorch implementation of Ego-Net.
 Author: Shichao Li
 Contact: nicholas.li@connect.ust.hk
 """
-
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import numpy as np
 import cv2
 import math
+from pathlib import Path
 
 from scipy.spatial.transform import Rotation
 from os.path import join as pjoin
@@ -355,7 +356,10 @@ class EgoNet(nn.Module):
         """
         if visualize:
             # plot 2D predictions 
-            vego.plot_2d_objects(img_path, record, color_dict)
+            _, fig = vego.plot_2d_objects(img_path, record, color_dict) # TODO didn't use the return value
+            save_dir = Path.joinpath(Path(save_dict['save_dir']).parent, 'images')
+            Path(save_dir).mkdir(parents=True, exist_ok=True)
+            fig.savefig(Path(save_dir / img_path.split('/')[-1]))
         # plot 3d bounding boxes
         all_kpts_2d = np.concatenate(record['kpts_2d_pred'])
         all_kpts_3d_pred = record['kpts_3d_pred'].reshape(len(record['kpts_3d_pred']), -1)
@@ -376,7 +380,6 @@ class EgoNet(nn.Module):
                                              visualize=visualize,
                                              get_str=save_dict['flag']
                                              )
-
         # save KITTI-style prediction file in .txt format
         save_txt_file(img_path, record, save_dict)
         return record
