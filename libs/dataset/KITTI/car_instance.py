@@ -1245,10 +1245,10 @@ class KITTI(bc.SupervisedDataset):
             rots = self.annot_2dpose['rots'][idx]
             kpts = self.annot_2dpose['kpts'][idx]
             if kpts.shape[2] == 2:
-                kpts = np.concatenate([kpts, np.ones((kpts.shape[0], kpts.shape[1], 1))], axis=2)            
+                kpts = np.concatenate([kpts, np.ones((kpts.shape[0], kpts.shape[1], 1))], axis=2)
             parameters = self.hm_para
             parameters['boxes'] = self.annot_2dpose['boxes'][idx]
-            images_fs, heatmaps_fs, weights_fs, meta_fs = lip.get_tensor_from_img(img_path, 
+            images_fs, heatmaps_fs, weights_fs, meta_fs = lip.get_tensor_from_img(img_path,
                                                                                   parameters, 
                                                                                   joints=kpts,
                                                                                   pth_trans=self.pth_trans,
@@ -1275,7 +1275,7 @@ class KITTI(bc.SupervisedDataset):
             parameters = self.hm_para
             parameters['boxes'] = self.annot_2dpose['boxes'][idx]
             # fs: fully-supervised ss: self-supervised
-            images_fs, heatmaps_fs, weights_fs, meta_fs = lip.get_tensor_from_img(img_path, 
+            images_fs, heatmaps_fs, weights_fs, meta_fs = lip.get_tensor_from_img(img_path,
                                                                    parameters, 
                                                                    joints=kpts,
                                                                    pth_trans=self.pth_trans,

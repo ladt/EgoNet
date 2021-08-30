@@ -230,7 +230,7 @@ def main():
     
     # which split to show
     split = data_cfgs['split'] # default: KITTI val split
-    dataset_inf = libkitti.get_dataset(cfgs, logger, split)
+    dataset_inf = libkitti.get_dataset(cfgs, logger, split) # TODO
     
     # set the dataset to inference mode
     dataset_inf.inference([True, False])
@@ -245,7 +245,7 @@ def main():
     results['flags'] = {}
     if cfgs['use_pred_box']:
         # read the predicted boxes as specified by the path
-        results['pred'] = dataset_inf.read_predictions(input_file_path)
+        results['pred'] = dataset_inf.read_predictions(input_file_path) # TODO
     
     # Initialize Ego-Net and load the pre-trained checkpoint
     model = EgoNet(cfgs, pre_trained=True)
@@ -256,22 +256,23 @@ def main():
     if cfgs['visualize']:
         return
 
-    evaluator = "./kitti-eval/evaluate_object_3d_offline"
-    label_dir = os.path.join(cfgs['dataset']['root'], 'training', 'label_2')
-    output_dir = os.path.join(cfgs['dirs']['output'], 'submission')
-    
-    # When generating submission files for the test split,
-    # if no detections are produced for one image, generate an empty file
-    if cfgs['dataset']['split'] == 'test':
-        test_calib_dir = os.path.join(cfgs['dataset']['root'], 'testing', 'calib')
-        generate_empty_file(output_dir, test_calib_dir)
-        return
-    
-    # run kitti-eval to produce official evaluation
-    command = "{} {} {}".format(evaluator, label_dir, output_dir)
-    output = subprocess.check_output(command, shell=True)
-    print(output.decode())
-    return output
+    # TODO
+    # evaluator = "./kitti-eval/evaluate_object_3d_offline"
+    # label_dir = os.path.join(cfgs['dataset']['root'], 'training', 'label_2')
+    # output_dir = os.path.join(cfgs['dirs']['output'], 'submission')
+    #
+    # # When generating submission files for the test split,
+    # # if no detections are produced for one image, generate an empty file
+    # if cfgs['dataset']['split'] == 'test':
+    #     test_calib_dir = os.path.join(cfgs['dataset']['root'], 'testing', 'calib')
+    #     generate_empty_file(output_dir, test_calib_dir)
+    #     return
+    #
+    # # run kitti-eval to produce official evaluation
+    # command = "{} {} {}".format(evaluator, label_dir, output_dir)
+    # output = subprocess.check_output(command, shell=True)
+    # print(output.decode())
+    # return output
 
 if __name__ == "__main__":
     main()
