@@ -13,10 +13,10 @@ gpu_id: [0]
 train: False
 save: False
 visualize: False # visualize during inference
-batch_to_show: 1000000 # how many batches to visualize if needed
+batch_to_show: 1000 # how many batches to visualize if needed
 evaluate: False
 inference: True
-conf_thres: 0.1 # discard low score boxes
+conf_thres: 0.0 # discard low score boxes # TODO
 
 ## used directories
 dirs:
@@ -25,7 +25,7 @@ dirs:
 #    ckpt: 'YOUR_PRETRAINED_DIR'
     ckpt: '../libs/models/'
     # raw detection results on test set by using RRC-Net
-    load_prediction_file: '../resources/TES_test_boxes' #TODO
+    load_prediction_file: '../resources/TES_test_boxes'
 
 ## CUDNN settings
 cudnn:
@@ -46,7 +46,7 @@ dataset:
         coef: [0.332, 0.667]
     # do some pre-processing
     pre-process: False
-    root: '/home/elad/Data/TES'
+    root: '/home/elad/Data/TES/00012_r1_2' # TODO
     # augmentation parameters
     scaling_factor: 0.2
     rotation_factor: 30. # degrees
@@ -156,7 +156,7 @@ heatmapModel:
 testing_settings:
     batch_size: 1
     num_threads: 0
-    shuffle: True # TODO set to False
+    shuffle: False
     pin_memory: False
     apply_dropout: False
     unnormalize: False

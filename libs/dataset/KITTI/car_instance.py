@@ -185,7 +185,7 @@ class KITTI(bc.SupervisedDataset):
         """
         Prepare list of image names for the used split.
         """
-        path = self._data_config[self.split + '_list']       
+        path = self._data_config[self.split + '_list']
         with open(path, "r") as f:
             image_name_list = f.read().splitlines()
         for idx, line in enumerate(image_name_list):
@@ -465,8 +465,8 @@ class KITTI(bc.SupervisedDataset):
             if not file_name.endswith(".txt"):
                 continue
             image_name = file_name[:-4] + ".png"
-            label_path = pjoin(path, file_name)            
-            self.read_single_file(image_name, 
+            label_path = pjoin(path, file_name)
+            self.read_single_file(image_name,
                                   record_dict, 
                                   label_path=label_path,
                                   use_raw_bbox=use_raw_bbox

@@ -35,17 +35,17 @@ def plot_2d_objects(img_path, record, color_dict):
         kpts = record['kpts_2d_pred'][idx].reshape(-1, 2)
         bbox = record['bbox_resize'][idx]
         vp.plot_2d_bbox(ax, bbox, color_dict['bbox_2d'])
-    #
-    #     TODO predicted key-points
-        ax.plot(kpts[:, 0], kpts[:, 1], color_dict['kpts'][0])
-    #
-    # TODO 3d bbox
-    if 'kpts_2d_gt' in record:
-        # plot ground truth 2D screen coordinates
-        for idx, kpts_gt in enumerate(record['kpts_2d_gt']):
-            kpts_gt = kpts_gt.reshape(-1, 3)
-            vp.plot_3d_bbox(ax, kpts_gt[1:, :2], color='g', linestyle='-.')
 
+    # #     TODO predicted key-points
+    #     ax.plot(kpts[:, 0], kpts[:, 1], color_dict['kpts'][0])
+    #
+    # # TODO 3d bbox
+    # if 'kpts_2d_gt' in record:
+    #     # plot ground truth 2D screen coordinates
+    #     for idx, kpts_gt in enumerate(record['kpts_2d_gt']):
+    #         kpts_gt = kpts_gt.reshape(-1, 3)
+    #         vp.plot_3d_bbox(ax, kpts_gt[1:, :2], color='g', linestyle='-.')
+    #
     if 'arrow' in record:
         for idx in range(len(record['arrow'])):
             start = record['arrow'][idx][:,0]

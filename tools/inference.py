@@ -231,7 +231,6 @@ def main():
     # which split to show
     split = data_cfgs['split'] # default: KITTI val split
     dataset_inf = libkitti.get_dataset(cfgs, logger, split) # TODO
-    
     # set the dataset to inference mode
     dataset_inf.inference([True, False])
     
@@ -245,14 +244,13 @@ def main():
     results['flags'] = {}
     if cfgs['use_pred_box']:
         # read the predicted boxes as specified by the path
-        results['pred'] = dataset_inf.read_predictions(input_file_path) # TODO
-    
+        results['pred'] = dataset_inf.read_predictions(input_file_path)
     # Initialize Ego-Net and load the pre-trained checkpoint
     model = EgoNet(cfgs, pre_trained=True)
     model = model.eval().cuda()
     
     # perform inference and save the (updated) predictions
-    inference(dataset_inf, model, results, cfgs)       
+    inference(dataset_inf, model, results, cfgs)
     if cfgs['visualize']:
         return
 
