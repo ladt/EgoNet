@@ -4,52 +4,60 @@ import random
 from distutils.dir_util import copy_tree
 import shutil
 from shutil import copy
+from PIL import Image
+import numpy as np
 
-def calc_new_box(img_path, old_line):
+def calc_new_box(img_path, old_box):
+    # returns a box - float list (left, top, right, bottom) == (x1, y1, x2, y2)
     pass
 
-def choose_box(img_pth, label_path):
+def choose_line(img_pth, label_path):
+    # returns a line
     # if no match - return None
     pass
 
 def new_img(img_arr, old_box, new_box):
+    # returns a new image array
     pass
 
 def new_imgs(in_dir, out_dir, mode, num_files):
 
     # create sub directories - assuming no files in parent dir
     for dir_name in os.listdir(in_dir):
-        new_dir_path = os.path.join(out_dir, dir_name)
-        Path(new_dir_path).mkdir(parents=True, exist_ok=True)
+        Path(out_dir, dir_name).mkdir(parents=True, exist_ok=True)
 
-    imgs_dirname = 'ImageSets'
     # choose files randomly - assuming no dirs in subdirs
-    imgs_filenames = random.sample(os.listdir(os.path.join(in_dir, imgs_dirname)), num_files)
+    imgs_filenames = random.sample(os.listdir(Path(in_dir, 'ImageSets')), num_files)
 
     for img_filename in imgs_filenames:
-        img_src_path = os.path.join(in_dir, imgs_dirname, img_filename)
-        img_dst_path = os.path.join(out_dir, imgs_dirname, img_filename)
-        label_path = os.path.join(in_dir, 'label_2', img_filename)
-        old_line = choose_box(img_src_path, label_path) # label line
+
+        img_src_path = Path(in_dir, 'ImageSets', img_filename)
+        img_dst_path = Path(out_dir, 'ImageSets', img_filename)
+        label_src_path = Path(in_dir, 'label_2', img_filename.split('.')[0] + '.txt')
+        label_dst_path = Path(out_dir, 'label_2', img_filename.split('.')[0] + '.txt')
+
+        old_line = choose_line(img_src_path, label_src_path) # label line
         if old_line is None: continue
-        new_line = calc_new_box(img_src_path, old_line) if mode == 'shift' else old_line
+        line_elemns = old_line.split(' ')
+        old_box = [float(elem) for elem in line_elemns[4: 8]]
+        new_box = calc_new_box(img_src_path, old_box) if mode == 'shift' else old_line # float list
+
+        # copy calib file
+        calib_src_path = Path(in_dir, 'calib', str(label_src_path).split('/')[-1])
+        copy(calib_src_path, str(Path(out_dir, 'calib')))
+
+        # write new label file
+        line_elemns[4: 8] = ['{:3f}'.format(elem) for elem in new_box]
+        new_line = (' ').join(line_elemns)
+        with open(label_dst_path, 'w') as label_file:
+            label_file.write(new_line + '\n')
 
         # change image file
-        with open(img_src_path, 'r') as img_src_file:
-            lines = img_src_file.read().splitlines()
-            for line in lines:
-                elems = line.split(' ')
-                cls, trunc, occ
-                cls, center_x, center_y, width, height = [float(elem) for elem in line.split(' ')]
-                if int(cls) !=3: continue
-                abs_center_x, abs_center_y = img_width * center_x, img_height * center_y
-                abs_width, abs_height = img_width * width, img_height * height
-                left, right = abs_center_x - abs_width / 2, abs_center_x + abs_width / 2
-                top, bottom = abs_center_y - abs_height / 2, abs_center_y + abs_height / 2
-                kitti_box = (left, top, right, bottom)
-                new_line_list = ['Car', * [-1] * 2, -10, * ['{:3f}'.format(elem) for elem in kitti_box], * [-1] * 3, * [-1000] * 3, -10, '{:8f}'.format(0)]
-                new_line = (' ').join([str(elem) for elem in new_line_list])
-                kitti_file.write(new_line + '\n')
+        img = Image.open(img_src_path)
+        img_arr = np.array(img)
+        new_arr = new_img(img_arr, old_box, new_box)
+        new_img = Image.fromarray(new_arr)
+        new_img.save(img_dst_path)
 
 
 def create_test_file(dir):
@@ -107,14 +115,18 @@ if __name__=='__main__':
     Path('../resources', 'KITTI_QUANT_test_boxes').mkdir(parents=True, exist_ok=True)
     copy_tree(str(Path(kitti_quant_dir, 'label_2')), str(Path('../resources', 'KITTI_QUANT_test_boxes')))
 
+    kitti_stat_dir = '/home/elad/Data/KITTI_STAT/testing'
+    kitti_shift_dir= '/home/elad/Data/KITTI_SHIFT/testing'
 
-    # stat_dir = '/home/elad/Data/KITTI_QUANTIZIED/testing'
-    # shift_dir= '/home/elad/Data/KITTI_QUANTIZIED/testing'
-    #
-    # in_dir = kitti_quant_dir
-    # out_dir = stat_dir
-    # new_imgs(in_dir, out_dir, mode='stat', num_files=10)
-    # create_test_file(out_dir)
+    in_dir = kitti_quant_dir
+    out_dir = kitti_stat_dir
+    new_imgs(in_dir, out_dir, mode='stat', num_files=10)
+    create_test_file(out_dir)
+
+    Path('../resources', 'KITTI_STAT_test_boxes').mkdir(parents=True, exist_ok=True)
+    copy_tree(str(Path(kitti_stat_dir, 'label_2')), str(Path('../resources', 'KITTI_STAT_test_boxes')))
+    Path('../resources', 'KITTI_SHIFT_test_boxes').mkdir(parents=True, exist_ok=True)
+    copy_tree(str(Path(kitti_shift_dir, 'label_2')), str(Path('../resources', 'KITTI_SHIFT_test_boxes')))
     #
     # # TODO run network
     #
