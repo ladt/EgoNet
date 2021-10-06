@@ -61,8 +61,11 @@ def new_imgs(in_dir, out_dir, mode, num_files):
 
 
 def create_test_file(dir):
-    # TODO sorted
-    pass
+    file_path = Path(dir, 'ImageSets', 'test.txt')
+    file_names = sorted([file for file in os.listdir(str(Path(dir, 'image2'))) if file.endswith('.png')])
+    with open(file_path, 'w') as test_file:
+        for txt_filename in file_names:
+            test_file.write(txt_filename.split('.')[0] + '\n')
 
 def cmp_alpha(src, dst):
     pass
