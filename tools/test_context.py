@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
 import random
+from distutils.dir_util import copy_tree
+import shutil
+from shutil import copy
 
 def calc_new_box(img_path, old_line):
     pass
@@ -56,6 +59,30 @@ def create_test_file(dir):
 def cmp_alpha(src, dst):
     pass
 
+def quant(src, dst):
+    Path(dst, 'calib').mkdir(parents=True, exist_ok=True)
+    copy_tree(str(Path(src, 'calib')), str(Path(dst,'calib')))
+    Path(dst, 'image2').mkdir(parents=True, exist_ok=True)
+    copy_tree(str(Path(src, 'image_2')), str(Path(dst, 'image2')))
+    Path(dst, 'ImageSets').mkdir(parents=True, exist_ok=True)
+    copy(str(Path(src, 'ImageSets', 'trainval.txt')), str(Path(dst, 'ImageSets')))
+    shutil.move(str(Path(dst, 'ImageSets', 'trainval.txt')), str(Path(dst, 'ImageSets', 'test.txt')))
+    Path(dst, 'label_2').mkdir(parents=True, exist_ok=True)
+    for filename in os.listdir(Path(src, 'label_2')):
+        src_file_path = Path(src, 'label_2', filename)
+        dst_file_path = Path(dst, 'label_2', filename)
+        with open(src_file_path, 'r') as src_file:
+            lines = src_file.read().splitlines()
+            with open(dst_file_path, 'w') as dst_file:
+                for line in lines:
+                    elems = line.split(' ')
+                    quant_box = ['{:3f}'.format(int(float(elem))) for elem in elems[4: 8]]
+                    new_line_list = [elems[0], *[-1] * 2, -10, *quant_box, *[-1] * 3,
+                                     *[-1000] * 3, -10, '{:8f}'.format(0)]
+                    new_line = (' ').join([str(elem) for elem in new_line_list])
+                    dst_file.write(new_line + '\n')
+
+
 if __name__=='__main__':
 
     '''
@@ -67,21 +94,31 @@ if __name__=='__main__':
         - compare shifted (black) images to quantizied (relevant boxes)
     '''
 
-    # TODO write a function to put all KITTI's quantizied GT data in new data folder - under testing
-    # put KITTI's testing folder labels + other datasets under 'resources'
+    '''
+    'resources' dir - put bboxes predictions
+    '_OUTPUT_DIR' dir - output: submission data (labels with alpha&yaw, same bboxes as input) & images with bboxes (different resolution! compare boxes against original input)
+    '''
 
-    orig_dir = '/home/elad/Data/KITTI_QUANTIZIED/testing'
-    stat_dir = '/home/elad/Data/KITTI_QUANTIZIED/testing'
-    shift_dir= '/home/elad/Data/KITTI_QUANTIZIED/testing'
+    # put all KITTI's quantizied GT data in new data folder - under testing
+    # put KITTI's testing folder labels under 'resources'
+    kitti_orig_dir = '/home/elad/Data/KITTI/training'
+    kitti_quant_dir = '/home/elad/Data/KITTI_QUANTIZIED/testing'
+    quant(kitti_orig_dir, kitti_quant_dir)
+    Path('../resources', 'KITTI_QUANT_test_boxes').mkdir(parents=True, exist_ok=True)
+    copy_tree(str(Path(kitti_quant_dir, 'label_2')), str(Path('../resources', 'KITTI_QUANT_test_boxes')))
 
-    in_dir = orig_dir
-    out_dir = stat_dir
-    new_imgs(in_dir, out_dir, mode='stat', num_files=10)
-    create_train_file(out_dir)
 
-    # TODO run network
-
-    orig_pred_dir = '/home/PycharmProjects/EgoNet/tools/YOUR_OUTPUT_DIR'
-    stat_pred_dir = '/home/PycharmProjects/EgoNet/tools/YOUR_STAT_DIR'
-    shift_pred_dir = '/home/PycharmProjects/EgoNet/tools/YOUR_SHIFT_DIR'
-    cmp_alpha(orig_pred_dir, dst=stat_pred_dir) # TODO cmp alpha also between GT and pred for sanity check
+    # stat_dir = '/home/elad/Data/KITTI_QUANTIZIED/testing'
+    # shift_dir= '/home/elad/Data/KITTI_QUANTIZIED/testing'
+    #
+    # in_dir = kitti_quant_dir
+    # out_dir = stat_dir
+    # new_imgs(in_dir, out_dir, mode='stat', num_files=10)
+    # create_test_file(out_dir)
+    #
+    # # TODO run network
+    #
+    # orig_pred_dir = '/home/PycharmProjects/EgoNet/tools/YOUR_OUTPUT_DIR'
+    # stat_pred_dir = '/home/PycharmProjects/EgoNet/tools/YOUR_STAT_DIR'
+    # shift_pred_dir = '/home/PycharmProjects/EgoNet/tools/YOUR_SHIFT_DIR'
+    # cmp_alpha(orig_pred_dir, dst=stat_pred_dir) # TODO cmp alpha also between GT and pred for sanity check
