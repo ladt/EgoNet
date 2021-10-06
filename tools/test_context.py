@@ -21,18 +21,18 @@ def choose_line(img_pth, label_path):
         lines = src_file.read().splitlines()
         for line in lines:
             elems = line.split(' ')
-            if elems[0] != 'Car' or elems[0] != '0' or elems[0] != '0':
+            if elems[0] != 'Car' or elems[1] != '0' or elems[2] != '0':
                 continue
             left, top, right, bottom = [int(float(elem)) for elem in elems[4: 8]]
             assert left >= 0 and right <= W-1 and top >= 0 and bottom <= H-1
             return line
     return None
 
-def new_img(img_arr, old_box, new_box):
+def get_new_img(img_arr, old_box, new_box):
     # returns a new image array
     new_img_arr = np.zeros_like(img_arr)
-    x1_old, y1_old, x2_old, y2_old = old_box
-    x1_new, y1_new, x2_new, y2_new = new_box
+    x1_old, y1_old, x2_old, y2_old = [int(elem) for elem in old_box]
+    x1_new, y1_new, x2_new, y2_new = [int(elem) for elem in new_box]
     assert x2_new - x1_new == x2_old - x1_old and y2_new - y1_new == y2_old - y1_old
     new_img_arr[y1_new: y2_new, x1_new: x2_new, :] = img_arr[y1_old: y2_old, x1_old : x2_old, :]
     return new_img_arr
@@ -43,7 +43,7 @@ def new_imgs(in_dir, out_dir, mode, num_files):
     for dir_name in os.listdir(in_dir):
         Path(out_dir, dir_name).mkdir(parents=True, exist_ok=True)
 
-    imgs_filenames = os.listdir(Path(in_dir, 'ImageSets'))
+    imgs_filenames = os.listdir(Path(in_dir, 'image_2'))
     # choose files randomly - assuming no dirs in subdirs
     random.shuffle(imgs_filenames)
 
@@ -51,10 +51,10 @@ def new_imgs(in_dir, out_dir, mode, num_files):
 
         if num_files == 0: break
 
-        img_src_path = Path(in_dir, 'ImageSets', img_filename)
-        img_dst_path = Path(out_dir, 'ImageSets', img_filename)
-        label_src_path = Path(in_dir, 'label_2', img_filename.split('.')[0] + '.txt')
-        label_dst_path = Path(out_dir, 'label_2', img_filename.split('.')[0] + '.txt')
+        img_src_path = Path(in_dir, 'image_2', img_filename)
+        img_dst_path = Path(out_dir, 'image_2', img_filename)
+        label_src_path = Path(in_dir, 'label_2', str(img_filename).split('.')[0] + '.txt')
+        label_dst_path = Path(out_dir, 'label_2', str(img_filename).split('.')[0] + '.txt')
 
         old_line = choose_line(img_src_path, label_src_path) # label line
         if old_line is None:
@@ -63,7 +63,7 @@ def new_imgs(in_dir, out_dir, mode, num_files):
             num_files -= 1
         line_elemns = old_line.split(' ')
         old_box = [float(elem) for elem in line_elemns[4: 8]]
-        new_box = calc_new_box(img_src_path, old_box) if mode == 'shift' else old_line # float list
+        new_box = calc_new_box(img_src_path, old_box, mode) if mode == 'shift' else old_box # float list
 
         # copy calib file
         calib_src_path = Path(in_dir, 'calib', str(label_src_path).split('/')[-1])
@@ -78,7 +78,7 @@ def new_imgs(in_dir, out_dir, mode, num_files):
         # change image file
         img = Image.open(img_src_path)
         img_arr = np.array(img)
-        new_arr = new_img(img_arr, old_box, new_box)
+        new_arr = get_new_img(img_arr, old_box, new_box)
         new_img = Image.fromarray(new_arr)
         new_img.save(img_dst_path)
 
@@ -154,7 +154,7 @@ if __name__=='__main__':
     Path('../resources', 'KITTI_STAT_test_boxes').mkdir(parents=True, exist_ok=True)
     copy_tree(str(Path(kitti_stat_dir, 'label_2')), str(Path('../resources', 'KITTI_STAT_test_boxes')))
     Path('../resources', 'KITTI_SHIFT_test_boxes').mkdir(parents=True, exist_ok=True)
-    copy_tree(str(Path(kitti_shift_dir, 'label_2')), str(Path('../resources', 'KITTI_SHIFT_test_boxes')))
+    # copy_tree(str(Path(kitti_shift_dir, 'label_2')), str(Path('../resources', 'KITTI_SHIFT_test_boxes'))) # TODO uncomment
 
     # TODO run network
 
