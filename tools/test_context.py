@@ -9,12 +9,20 @@ import numpy as np
 
 def calc_new_box(img_path, old_box):
     # returns a box - float list (left, top, right, bottom) == (x1, y1, x2, y2)
-    pass
+    x1, y1, x2, y2 = old_box
+    img = Image.open(img_path)
+    img_arr = np.array(img)
+    W = img_arr.shape[1]
+    box_width = x2 - x1
+    new_x1 = random.randrange(0, W - box_width + 1)
+    new_x2 = new_x1 + box_width
+    assert x2 < W
+    return new_x1, y1, new_x2, y2
 
-def choose_line(img_pth, label_path):
+def choose_line(img_path, label_path):
     # returns first line - where class is Car
     # if no match - return None
-    img = Image.open(img_pth)
+    img = Image.open(img_path)
     img_arr = np.array(img)
     H, W, _ = img_arr.shape
     with open(label_path, 'r') as src_file:
@@ -49,7 +57,7 @@ def new_imgs(in_dir, out_dir, mode, num_files):
 
     for img_filename in imgs_filenames:
 
-        if num_files == 0: break
+        # if num_files == 0: break # TODO
 
         img_src_path = Path(in_dir, 'image_2', img_filename)
         img_dst_path = Path(out_dir, 'image_2', img_filename)
@@ -63,7 +71,7 @@ def new_imgs(in_dir, out_dir, mode, num_files):
             num_files -= 1
         line_elemns = old_line.split(' ')
         old_box = [float(elem) for elem in line_elemns[4: 8]]
-        new_box = calc_new_box(img_src_path, old_box, mode) if mode == 'shift' else old_box # float list
+        new_box = calc_new_box(img_src_path, old_box) if mode == 'shift' else old_box # float list
 
         # copy calib file
         calib_src_path = Path(in_dir, 'calib', str(label_src_path).split('/')[-1])
@@ -85,7 +93,7 @@ def new_imgs(in_dir, out_dir, mode, num_files):
 
 def create_test_file(dir):
     file_path = Path(dir, 'ImageSets', 'test.txt')
-    file_names = sorted([file for file in os.listdir(Path(dir, 'image2')) if file.endswith('.png')])
+    file_names = sorted([file for file in os.listdir(Path(dir, 'image_2')) if file.endswith('.png')])
     with open(file_path, 'w') as test_file:
         for txt_filename in file_names:
             test_file.write(txt_filename.split('.')[0] + '\n')
@@ -137,24 +145,27 @@ if __name__=='__main__':
     # put all KITTI's quantizied GT data in new data folder - under testing
     # put KITTI's testing folder labels under 'resources'
     # we don't filter only-cars labels: prediction is performed only for cars in images (images without cars - no output)
+
     kitti_orig_dir = '/home/elad/Data/KITTI/training'
     kitti_quant_dir = '/home/elad/Data/KITTI_QUANTIZIED/testing'
-    quant(kitti_orig_dir, kitti_quant_dir)
-    Path('../resources', 'KITTI_QUANT_test_boxes').mkdir(parents=True, exist_ok=True)
-    copy_tree(str(Path(kitti_quant_dir, 'label_2')), str(Path('../resources', 'KITTI_QUANT_test_boxes')))
+    # quant(kitti_orig_dir, kitti_quant_dir)
+    # Path('../resources', 'KITTI_QUANT_test_boxes').mkdir(parents=True, exist_ok=True)
+    # copy_tree(str(Path(kitti_quant_dir, 'label_2')), str(Path('../resources', 'KITTI_QUANT_test_boxes')))
 
     kitti_stat_dir = '/home/elad/Data/KITTI_STAT/testing'
     kitti_shift_dir= '/home/elad/Data/KITTI_SHIFT/testing'
 
-    in_dir = kitti_quant_dir
-    out_dir = kitti_stat_dir
-    new_imgs(in_dir, out_dir, mode='stat', num_files=10)
+    # in_dir = kitti_quant_dir # TODO
+    # out_dir = kitti_stat_dir
+    in_dir = kitti_stat_dir
+    out_dir = kitti_shift_dir
+    new_imgs(in_dir, out_dir, mode='shift', num_files=10) # TODO mode == 'stat'
     create_test_file(out_dir)
 
     Path('../resources', 'KITTI_STAT_test_boxes').mkdir(parents=True, exist_ok=True)
     copy_tree(str(Path(kitti_stat_dir, 'label_2')), str(Path('../resources', 'KITTI_STAT_test_boxes')))
     Path('../resources', 'KITTI_SHIFT_test_boxes').mkdir(parents=True, exist_ok=True)
-    # copy_tree(str(Path(kitti_shift_dir, 'label_2')), str(Path('../resources', 'KITTI_SHIFT_test_boxes'))) # TODO uncomment
+    copy_tree(str(Path(kitti_shift_dir, 'label_2')), str(Path('../resources', 'KITTI_SHIFT_test_boxes'))) # TODO uncomment
 
     # TODO run network
 
