@@ -21,11 +21,11 @@ conf_thres: 0.0 # discard low score boxes
 ## used directories
 dirs:
     # output directory
-    output: 'KITTI_STAT'
+    output: 'KITTI_SHIFT'
 #    ckpt: 'YOUR_PRETRAINED_DIR'
     ckpt: '../libs/models/'
     # raw detection results on test set by using RRC-Net
-    load_prediction_file: '../resources/KITTI_STAT_test_boxes'
+    load_prediction_file: '../resources/KITTI_SHIFT_test_boxes'
 
 ## CUDNN settings
 cudnn:
@@ -46,7 +46,7 @@ dataset:
         coef: [0.332, 0.667]
     # do some pre-processing
     pre-process: False
-    root: '/home/elad/Data/KITTI_STAT'
+    root: '/home/elad/Data/KITTI_SHIFT'
     # augmentation parameters
     scaling_factor: 0.2
     rotation_factor: 30. # degrees
